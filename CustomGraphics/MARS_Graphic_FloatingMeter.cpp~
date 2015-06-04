@@ -1,0 +1,91 @@
+#include "MARS_Graphic_FloatingMeter.hpp"
+
+void MARS_Graphic_FloatingMeter::render(void* vicondata, void* miscdata){
+	updateVicon(vicondata); //updates actor position
+	updateMisc(miscdata);
+	static float iter = 0;
+	iter++;
+	resource = fabs(sin(iter/100.0));
+	resource_max = 1;
+	
+	vector3<GLfloat> renderpos = position + this->displacement;
+	GLUquadric* quadric1, *quadric2 = gluNewQuadric();
+	glTranslatef(renderpos.x, renderpos.y, renderpos.z);
+	glRotatef(180, 1, 0, 0);
+	//resource container cylinder first, with 1/2 the opacity of the resource cylinder
+	//glColor4f(this->color[0], this->color[1], this->color[2], this->color[3]/2.0);
+	//gluCylinder(quadric1, this->radius, this->radius, this->height, 15, 1);
+	//resource cylinder itself
+	//interpolate colours
+	GLfloat r,g,b;
+	if (resource / resource_max <= 0.5){
+		float frac = resource / (resource_max/2.0);
+		r = rl*(1-frac) + rm*frac;
+		g = gl*(1-frac) + gm*frac;
+		b = bl*(1-frac) + bm*frac;
+	} else {
+		float frac = (resource - resource_max/2.0) / (resource_max/2.0);
+		r = rm*(1-frac) + rh*frac;
+		g = gm*(1-frac) + gh*frac;
+		b = bm*(1-frac) + bh*frac;
+	}
+	glColor4f(r,g,b, this->color[3]);
+	gluCylinder(quadric2, this->radius, this->radius, this->height*resource/resource_max, 15, 1);
+}
+	
+MARS_Graphic_FloatingMeter::MARS_Graphic_FloatingMeter(const char* name, GLubyte rc, GLubyte gc, GLubyte bc,
+													GLubyte rh, GLubyte gh, GLubyte bh, 
+													GLubyte rm, GLubyte gm, GLubyte bm,
+													GLubyte rl, GLubyte gl, GLubyte bl, GLubyte a, 
+							float resource, float resource_max, 
+							vector3<GLfloat> displacement, GLfloat radius, 
+							GLfloat height) : MARS_Graphic(name, rc, gc, bc, a){
+	this->rh = rh/255.0;
+	this->gh = gh/255.0;
+	this->bh = bh/255.0;
+	this->rm = rm/255.0;
+	this->gm = gm/255.0;
+	this->bm = bm/255.0;
+	this->rl = rl/255.0;
+	this->gl = gl/255.0;
+	this->bl = bl/255.0;
+	this->resource = resource;
+	this->resource_max = resource_max;	
+
+	this->displacement = displacement;
+	this->radius = radius;
+	this->height = height;
+}
+
+void MARS_Graphic_FloatingMeter::setResourceValue(float resource){
+	this->resource = resource;
+}
+		
+float MARS_Graphic_FloatingMeter::getResourceValue(){
+	return this->resource;
+}
+		
+float MARS_Graphic_FloatingMeter::getResourceMax(){
+	return this->resource_max;
+}
+
+void MARS_Graphic_FloatingMeter::updateMisc(void* miscdata){
+	char *idx = (char*)miscdata;
+
+	// Extract data
+	int   dest, src, cmdid;
+	float cmd[8];
+
+	while( sscanf(idx,"%d %d %d %f %f %f %f %f %f %f %f;",
+			&src,&dest,&cmdid,&cmd[0],&cmd[1],&cmd[2],&cmd[3],
+			&cmd[4],&cmd[5],&cmd[6],&cmd[7] ) == 11 ) {
+
+		if (dest == MARS_id){
+				resource = cmd[0];
+		}
+
+		// Update the packet received index
+		idx = index(idx, ';') + 1;
+
+	} // end while(sscanf)
+}

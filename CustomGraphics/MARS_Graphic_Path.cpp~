@@ -1,0 +1,40 @@
+#include "MARS_Graphic_Path.hpp"
+
+void MARS_Graphic_Path::render(void* data){
+	update(data);//update actor position
+	vector3<GLfloat> = getPos();
+	//addToPath(getPos()); //add the latest position to graphic path
+	
+	glColor4f(this->color[0], this->color[1], this->color[2], this->color[3]);
+	glLineWidth(lwidth);
+	glBegin(GL_LINE_STRIP);
+	for (vector< vector3<GLfloat> >::iterator it = getPath().begin(); it < getPath().end(); it++){
+		it->makeVertex();
+	}
+	glEnd();
+}
+		
+void MARS_Graphic_Path::setLineWidth(GLfloat lwidth){
+	this->lwidth = lwidth;
+}
+		
+MARS_Graphic_Path::MARS_Graphic_Path(const char* name, GLubyte r, GLubyte g, GLubyte b, GLubyte a, GLfloat lwidth) :
+			      		MARS_Graphic(name, r, g, b, a) {
+	this->lwidth = lwidth;
+}
+
+void MARS_Graphic_Path::clearPath(){
+	path.clear();
+}
+		
+vector< vector3<GLfloat> >& MARS_Graphic_Path::getPath(){
+	return this->path;
+}
+		
+void MARS_Graphic_Path::addToPath(vector3<GLfloat>& newpt){
+	path.push_back(newpt);
+}
+		
+void MARS_Graphic_Path::removeOldestPoint(){
+	path.erase(path.begin());
+}

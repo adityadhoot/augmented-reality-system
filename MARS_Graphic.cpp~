@@ -1,0 +1,74 @@
+#include "MARS_Graphic.hpp"
+
+MARS_Graphic::MARS_Graphic(const char* name, GLubyte r, GLubyte g, GLubyte b, GLubyte alpha){
+	strncpy(this->name, name, namesize);
+	this->vicon_ID = -1;
+	this->color[0] = r/255.0; this->color[1] = g/255.0; this->color[2] = b/255.0; this->color[3] = alpha/255.0;
+	this->enabled = true;
+}
+
+
+void MARS_Graphic::setEnabled(bool en){
+	this->enabled = en;
+}
+
+bool MARS_Graphic::isEnabled(){
+	return enabled;
+}
+
+void MARS_Graphic::setColor(GLubyte r, GLubyte g, GLubyte b, GLubyte alpha){		
+	this->color[0] = r/255.0;
+	this->color[1] = g/255.0;
+	this->color[2] = b/255.0;
+	this->color[3] = alpha/255.0;
+}
+
+//for updating actors
+void MARS_Graphic::updateVicon(void* data){
+	//printf ("updating Graphic position....\n");
+	// Parse the buffer and find the name 
+	char* idx = (char*)data;
+	//printf ("buf data: %s\n", idx);
+	float timestamp;
+	sscanf(idx, "%f;", &timestamp);
+	if (!index(idx, ';')) //if the buffer has no datapackets -- sometimes happens while the datamanager is starting up
+		return;
+	idx = index(idx, ';') + 1;
+	char   name_data[128];
+	int    id;
+	float  x, y, z, phi, theta, psi, dx, dy, dz;
+	float  dphi, dtheta, dpsi, qx, qy, qz, qw;
+	while( sscanf(idx,"%s %d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f;",
+		              name_data,&id,&x,&y,&z,&phi,&theta,&psi,&dx,&dy,&dz,&dphi,&dtheta,&dpsi,
+		              &qy,&qx,&qz,&qw) == 18 )
+	{
+
+		// if name matches actor.name then update
+		if ( strcmp(name_data, this->name) == 0 )
+		{
+			printf("Graphic: X: %f Y: %f Z: %f\n", x, y, z); fflush(stdout);
+			this->position.x = x;
+			this->position.y = y;
+			this->position.z = z;
+			this->velocity.x = dx;
+			this->velocity.y = dy;
+			this->velocity.z = dz;
+			this->psi = M_PI/2.0 - psi;
+			this->theta = theta;
+			this->phi = phi;
+			this->dpsi = -dpsi;
+			this->dtheta = dtheta;
+			this->dphi = dphi;
+
+			this->vicon_ID = id;
+
+			
+		}
+		if (!index(idx, ';')){ //if the buffer has no datapackets --THIS SHOULD NEVER BE TRUE -- sscanf above should find the ';'
+			printf("MARS_Graphic Warning: idx was null in while loop.");
+			return;
+		}
+		// Update the packet received index
+		idx = index(idx, ';') + 1;
+	}
+}

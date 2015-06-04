@@ -1,0 +1,7 @@
+CAM01
+7.03209778e+02
+7.03209778e+02
+newgraphic-> = Circle
+Name = Circle1 Red = 1 Green = 2 Blue = 3 Alpha = 4 Centre = (1,2,3) Normal = (1,2,3) Resolution = 6 Radius = 7 Toggle Key=9
+newgraphic-> = Open Rectangle
+Name = rect1 Red Red = 1 Green = 2 Blue = 3 Alpha = 4 Corner1(x,y,z) = (1,2,3) Corner2(x,y,z) = (1,2,3) Corner3(x,y,z) = (1,2,3) Corner4(x,y,z) = (1,2,3) Thickness = 6 Toggle Key = 7
